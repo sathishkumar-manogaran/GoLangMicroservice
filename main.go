@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"time"
 
-	"github.com/sathishkumar-manogaran/GoMicroService/handlers"
+	"github.com/sathishkumar-manogaran/GoLangMicroService/handlers"
 )
 
 func main() {
@@ -45,7 +48,40 @@ func main() {
 	serverMux.Handle("/hello", helloHandler)
 	serverMux.Handle("/goodbye", goodByeHandler)
 
+	// To override default server config
+	// This can be used in graceful shutdown too
+	server := &http.Server{
+		Addr:         ":9090",
+		Handler:      serverMux,
+		ReadTimeout:  120 * time.Second,
+		IdleTimeout:  1 * time.Second,
+		WriteTimeout: 1 * time.Second,
+	}
+
 	//http.ListenAndServe(":9090", nil)
 	// replace the default server mux with above one which is created by us
-	http.ListenAndServe(":9090", serverMux)
+	// http.ListenAndServe(":9090", serverMux)
+	// replace the default server config with custom one
+	//server.ListenAndServe()
+
+	// Below all the lines are related to graceful shutdown
+	go func() {
+		err := server.ListenAndServe()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	// creating os signal channel to know the exact signal status
+	signalChannel := make(chan os.Signal)
+	signal.Notify(signalChannel, os.Interrupt)
+	signal.Notify(signalChannel, os.Kill)
+
+	// value of signal channel to log
+	sig := <-signalChannel
+	log.Println("Received termination request; Singal Received :: ", sig)
+
+	tc, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	server.Shutdown(tc)
+
 }
