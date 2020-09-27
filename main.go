@@ -13,12 +13,6 @@ import (
 )
 
 func main() {
-	fmt.Println("Application Started Successfully")
-
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Server Up and Running")
-		fmt.Fprintf(w, "Server Up and Running\n")
-	})
 
 	/* http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Hello World")
@@ -38,15 +32,26 @@ func main() {
 		fmt.Fprintf(w, "Goodbye World\n")
 	}) */
 
+	//env.Parse()
+
+	fmt.Println("Application Started Successfully")
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Server Up and Running")
+		fmt.Fprintf(w, "Server Up and Running\n")
+	})
+
 	//1. Start Implementating All the handlers
 	log := log.New(os.Stdout, "product-api ", log.LstdFlags)
 	helloHandler := handlers.NewHello(log)
 	goodByeHandler := handlers.NewGoodbye(log)
+	productsHandler := handlers.NewProduct(log)
 
 	//2. Now, register this hello handler in default serve mux
 	serverMux := http.NewServeMux()
 	serverMux.Handle("/hello", helloHandler)
 	serverMux.Handle("/goodbye", goodByeHandler)
+	serverMux.Handle("/products", productsHandler)
 
 	// To override default server config
 	// This can be used in graceful shutdown too
@@ -78,8 +83,8 @@ func main() {
 	signal.Notify(signalChannel, os.Kill)
 
 	// value of signal channel to log
-	sig := <-signalChannel
-	log.Println("Received termination request; Singal Received :: ", sig)
+	signalReceived := <-signalChannel
+	log.Println("Received termination request; Singal Received :: ", signalReceived)
 
 	tc, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	server.Shutdown(tc)
