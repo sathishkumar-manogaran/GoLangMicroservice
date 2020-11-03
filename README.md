@@ -1,4 +1,4 @@
-This GoLang Microservice Repo contains all the below mentioned topics
+This GoLang Microservice Repository contains all the below mentioned topics.
 
 - Introduction to microservices
 - RESTFul microservices

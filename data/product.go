@@ -16,6 +16,7 @@ type Product struct {
 	CreatedOn   string  `json:"-"`
 	UpdatedOn   string  `json:"-"`
 	DeletedOn   string  `json:"-"`
+	// `json:"-"` will ignore this in response
 }
 
 // Creating 'type' for this Product so we can create func / method to expose
